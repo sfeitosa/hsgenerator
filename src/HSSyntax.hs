@@ -13,24 +13,29 @@ data PrimType = IntType
               | CharType
               deriving (Show, Eq)
 
+data Constructor = Constructor String [Type]
+                 deriving (Show, Eq)
+
 data Type = TypePrim PrimType
           | TypeTuple [Type]
           | TypeList Type
           | TypeFunction Type Type
+          | TypeAlgebraic [Constructor]
           deriving (Show, Eq)
-
-data Constructor = Constructor String [Type]
-                 deriving (Show, Eq)
 
 data Pattern = VarPattern String
              | WildcardPattern
-             | ConstructorPattern String [Pattern] -- @TODO: generate constructor patterns
+             | ConstructorPattern String [Pattern]
+             | LiteralPattern Literal
+             | TuplePattern [Pattern]
+             | EmptyListPattern
+             | ConsPattern Pattern Pattern
              deriving (Show, Eq)
 
 data Declaration = FunctionDecl String [Type] [Pattern] Expression
-                | DataDecl String [Constructor]
-                | TypeDecl String Type
-                deriving (Show, Eq)
+                 | DataDecl String [Constructor]
+                 | TypeDecl String Type
+                 deriving (Show, Eq)
 
 data Literal = IntLiteral Int
              | IntegerLiteral Integer
@@ -46,8 +51,9 @@ data CaseAlternative = CaseAlternative Pattern Expression
 
 data Expression = LiteralExpr Literal
                 | VarExpr String
-                | AppExpr Expression Expression
-                | LambdaExpr [Pattern] Expression
+                | FunExpr String
+                | AppExpr Expression [Expression]
+                | LambdaExpr [Type] [Pattern] Expression
                 | LetExpr String Expression Expression
                 | CaseExpr Expression [CaseAlternative]
                 | IfExpr Expression Expression Expression

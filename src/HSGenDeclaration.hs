@@ -3,31 +3,12 @@ module HSGenDeclaration where
 import Test.QuickCheck
 import Consts
 import HSSyntax
+import HSGenPattern
 import HSGenType
 
 -------------------------------------------------------------------------------
 -- Generating Function declarations                                          --
 -------------------------------------------------------------------------------
-
-genVarPattern :: Gen Pattern
-genVarPattern = do
-    n <- elements varNames -- @TODO: get and remove var name
-    return $ VarPattern n
-
-genWildcardPattern :: Gen Pattern
-genWildcardPattern = do return WildcardPattern
-
--- genConstructorPattern :: Gen Pattern
--- genConstructorPattern = do
---     n  <- elements constrNames -- @TODO: get existing constructor names
---     mx <- chooseInt (2, maxParamSize)
---     ps <- vectorOf mx genPattern
---     ConstructorPattern n <$> ps
-
-genPattern :: Type -> Gen Pattern
-genPattern t = frequency [(10, genVarPattern), 
-                          (1, genWildcardPattern)] 
-                          -- (2, genConstructorPattern)]
 
 genFunctionDecl :: Gen Declaration
 genFunctionDecl = do

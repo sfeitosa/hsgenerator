@@ -4,6 +4,7 @@ import Test.QuickCheck
 import Consts
 import Utils
 import HSSyntax
+import HSGenPattern
 import HSGenType
 import HSGenDeclaration
 import Control.Monad
@@ -13,13 +14,13 @@ import Control.Monad
 -------------------------------------------------------------------------------
 
 genLiteral :: PrimType -> Gen Literal
-genLiteral IntType    = IntLiteral <$> arbitrary
+genLiteral IntType     = IntLiteral <$> arbitrary
 genLiteral IntegerType = IntegerLiteral <$> arbitrary
-genLiteral FloatType  = FloatLiteral <$> arbitrary
-genLiteral DoubleType = DoubleLiteral <$> arbitrary
-genLiteral StringType = StringLiteral . getPrintableString <$> arbitrary
-genLiteral BoolType   = BoolLiteral <$> arbitrary
-genLiteral CharType   = CharLiteral <$> arbitraryPrintableChar
+genLiteral FloatType   = FloatLiteral <$> arbitrary
+genLiteral DoubleType  = DoubleLiteral <$> arbitrary
+genLiteral StringType  = StringLiteral . getPrintableString <$> arbitrary
+genLiteral BoolType    = BoolLiteral <$> arbitrary
+genLiteral CharType    = CharLiteral <$> arbitraryPrintableChar
 
 genLiteralExpr :: Type -> Maybe (Gen Expression)
 genLiteralExpr (TypePrim t) = Just $ LiteralExpr <$> genLiteral t
@@ -41,8 +42,19 @@ genVarExpr ctx t =
 -- Generating Function Application Expression                                --
 -------------------------------------------------------------------------------
 
-genAppExpr :: Int -> Ctx -> Type -> Maybe (Gen Expression)
-genAppExpr s ctx t = undefined
+genAppExpr :: Int -> Ctx -> Type -> Gen Expression
+genAppExpr s ctx t = 
+    let fs = [(n, tp) | (n, TypeFunction tp tr) <- ctx, tr == t]
+      in if null fs then 
+           do 
+             e  <- genLambdaExpr (s `div` 2) ctx t
+             es <- mapM (genExpression (s `div` 2) ctx) (getLambdaParamTypes e)
+             return $ AppExpr e es
+         else 
+           do
+             f  <- elements fs
+             es <- mapM (genExpression (s `div` 2) ctx) [snd f] -- @TODO: generate more than one argument
+             return $ AppExpr (FunExpr (fst f)) es
 
 -------------------------------------------------------------------------------
 -- Generating Lambda Expression                                              --
@@ -53,7 +65,7 @@ genLambdaExpr s ctx tr = do
     tp <- genType s -- @TODO: Will we allow more than one variable on lambdas?
     p  <- genPattern tp
     e  <- genExpression (s `div` 2) (getPatternVars tp p ++ ctx) tr
-    return $ LambdaExpr [p] e
+    return $ LambdaExpr [tp] [p] e
 
 -------------------------------------------------------------------------------
 -- Generating Let Expressions                                                --
@@ -71,8 +83,22 @@ genLetExpr s ctx t = do
 -- Generating Case Expressions                                               --
 -------------------------------------------------------------------------------
 
+genAlt :: Int -> Ctx -> Type -> Gen CaseAlternative
+genAlt s ctx t = do
+    p <- genPattern t
+    e <- genExpression (s `div` 2) (getPatternVars t p ++ ctx) t
+    return $ CaseAlternative p e
+
+genAlts :: Int -> Ctx -> Type -> Gen [CaseAlternative]
+genAlts s ctx t = do
+    mx <- chooseInt (0, maxCaseAltSize)
+    vectorOf mx (genAlt s ctx t)
+
 genCaseExpr :: Int -> Ctx -> Type -> Gen Expression
-genCaseExpr s ctx t = undefined
+genCaseExpr s ctx t = do
+    e  <- genExpression (s `div` 2) ctx t
+    al <- genAlts (s `div` 2) ctx t
+    return $ CaseExpr e al
 
 -------------------------------------------------------------------------------
 -- Generating If Expressions                                                 --
@@ -99,26 +125,41 @@ genTupleExpr _ _ _                = Nothing
 -- Generating List Expressions                                               --
 -------------------------------------------------------------------------------
 
+genExprList :: Int -> Ctx -> Type -> Gen [Expression]
+genExprList s ctx t = do
+    mx <- chooseInt (0, maxListSize)
+    vectorOf mx (genExpression (s `div` 2) ctx t)    
+
 genListExpr :: Int -> Ctx -> Type -> Maybe (Gen Expression)
-genListExpr s ctx t = undefined
+genListExpr s ctx (TypeList t) = Just $ ListExpr <$> genExprList s ctx t
+genListExpr _ _ _              = Nothing
 
 -------------------------------------------------------------------------------
 -- Generating Expressions                                                    --
 -------------------------------------------------------------------------------
 
 genExpression :: Int -> Ctx -> Type -> Gen Expression
-genExpression s ctx t = undefined
+genExpression s ctx (TypeTuple ts) | s > 0 = undefined
+                                   | otherwise = undefined
+genExpression s ctx (TypeList t) | s > 0 = undefined
+                                 | otherwise = undefined
+genExpression s ctx (TypePrim t) | s > 0 = undefined
+                                 | otherwise = undefined
+genExpression s ctx t = error $ "genExpression for (" ++ show t ++ ") not implemented."
 
--- genExpression :: Ctx -> Int -> Type -> Gen Expression
--- genExpression ctx s t | s > 0     = frequency [(100, genLiteralExpr t),
---                                                (10, genVarExpr ctx t)]
---                                         --  (10, genAppExpr s'), 
---                                         --  (10, genLambdaExpr s'), 
---                                         --  (10, genLetExpr s'), 
---                                         --  (10, genCaseExpr s'), 
---                                         --  (10, genIfExpr s'), 
---                                         --  (10, genTupleExpr s'), 
---                                         --  (10, genListExpr s'), 
---                                         --  (10, genConstructorExpr s')]
---                       | otherwise = genLiteralExpr t
---     where s' = s `div` 2
+
+
+    -- let es = [e | Just e <- [genLiteralExpr t, 
+    --                          genVarExpr ctx t, 
+    --                          genTupleExpr s ctx t, 
+    --                          genListExpr s ctx t]]
+    --   in if null es then 
+    --        do 
+    --          e <- genAppExpr s ctx t
+    --          return e
+    --      else 
+    --        do 
+    --          e <- elements es
+    --          e
+
+

@@ -2,6 +2,12 @@ module Consts where
 
 import Test.QuickCheck
 
+minLitBound :: Int
+minLitBound = -100
+
+maxLitBound :: Int
+maxLitBound = 100
+
 maxTupleSize :: Int 
 maxTupleSize = 5
 
@@ -13,6 +19,9 @@ maxParamSize = 5
 
 maxConstrSize :: Int 
 maxConstrSize = 5
+
+maxCaseAltSize :: Int
+maxCaseAltSize = 5
 
 varNames = ["x", "y", "z", "a", "b", "c", "n", "m", "k", "i", "j", "s", "t", 
             "f", "g", "h", "l", "r", "u", "v", "w", "e", "d", "p", "q", "xs", 
