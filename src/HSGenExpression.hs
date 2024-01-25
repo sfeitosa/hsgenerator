@@ -1,6 +1,7 @@
 module HSGenExpression where 
     
 import Test.QuickCheck
+import Data.Maybe
 import Consts
 import Utils
 import HSSyntax
@@ -47,22 +48,22 @@ genAppExpr s ctx t =
     let fs = [(n, tp) | (n, TypeFunction tp tr) <- ctx, tr == t]
       in if null fs then 
            do 
-             e  <- genLambdaExpr (s `div` 2) ctx t
+             tp <- genType s
+             e  <- genLambdaExpr (s `div` 2) ctx (TypeFunction tp t)
              es <- mapM (genExpression (s `div` 2) ctx) (getLambdaParamTypes e)
              return $ AppExpr e es
          else 
            do
              f  <- elements fs
              es <- mapM (genExpression (s `div` 2) ctx) [snd f] -- @TODO: generate more than one argument
-             return $ AppExpr (FunExpr (fst f)) es
+             return $ AppExpr (VarExpr (fst f)) es
 
 -------------------------------------------------------------------------------
 -- Generating Lambda Expression                                              --
 -------------------------------------------------------------------------------
 
-genLambdaExpr :: Int -> Ctx -> Type -> Gen Expression
-genLambdaExpr s ctx tr = do
-    tp <- genType s -- @TODO: Will we allow more than one variable on lambdas?
+genLambdaExpr :: Int -> Ctx -> Type -> Gen Expression -- @TODO: change to return Maybe
+genLambdaExpr s ctx (TypeFunction tp tr) = do
     p  <- genPattern tp
     e  <- genExpression (s `div` 2) (getPatternVars tp p ++ ctx) tr
     return $ LambdaExpr [tp] [p] e
@@ -138,28 +139,40 @@ genListExpr _ _ _              = Nothing
 -- Generating Expressions                                                    --
 -------------------------------------------------------------------------------
 
+genFinalExpression :: Ctx -> Type -> Gen Expression
+genFinalExpression ctx t@(TypeTuple ts) = 
+    let es = catMaybes [genTupleExpr 0 ctx t, 
+                        genVarExpr ctx t]
+      in do join (elements es)
+genFinalExpression ctx t@(TypeList t') = 
+    let es = catMaybes [genListExpr 0 ctx t, 
+                        genVarExpr ctx t]
+      in do join (elements es)
+genFinalExpression ctx t@(TypePrim t') = 
+    let es = catMaybes [genLiteralExpr t, 
+                        genVarExpr ctx t]
+      in do join (elements es)
+genFinalExpression ctx t@(TypeFunction t1 t2) = 
+    LambdaExpr [t1] <$> mapM genPattern [t1] <*> genExpression 0 ctx t2
+-- genFinalExpression ctx t@(TypeFunction t1 t2) = 
+--     let es = catMaybes [Just $ genLambdaExpr 0 ctx t, 
+--                         genVarExpr ctx t]
+--       in do join (elements es)
+genFinalExpression ctx t = error $ "genFinalExpression for (" ++ show t ++ ") not implemented."
+
+genRecursiveExpression :: Int -> Ctx -> Type -> Gen Expression
+genRecursiveExpression s ctx t = 
+    let es1 = catMaybes [genLiteralExpr t, 
+                         genVarExpr ctx t, 
+                         genTupleExpr (s `div` 2) ctx t,
+                         genListExpr (s `div` 2) ctx t]
+        es2 = [genAppExpr s ctx t, 
+               genLambdaExpr s ctx t, 
+               genLetExpr s ctx t, 
+               genCaseExpr s ctx t, 
+               genIfExpr s ctx t]         
+      in do join (elements (es1 ++ es2))
+
 genExpression :: Int -> Ctx -> Type -> Gen Expression
-genExpression s ctx (TypeTuple ts) | s > 0 = undefined
-                                   | otherwise = undefined
-genExpression s ctx (TypeList t) | s > 0 = undefined
-                                 | otherwise = undefined
-genExpression s ctx (TypePrim t) | s > 0 = undefined
-                                 | otherwise = undefined
-genExpression s ctx t = error $ "genExpression for (" ++ show t ++ ") not implemented."
-
-
-
-    -- let es = [e | Just e <- [genLiteralExpr t, 
-    --                          genVarExpr ctx t, 
-    --                          genTupleExpr s ctx t, 
-    --                          genListExpr s ctx t]]
-    --   in if null es then 
-    --        do 
-    --          e <- genAppExpr s ctx t
-    --          return e
-    --      else 
-    --        do 
-    --          e <- elements es
-    --          e
-
-
+genExpression s ctx t | s > 0 = genRecursiveExpression (s `div` 2) ctx t
+                      | otherwise = genFinalExpression ctx t

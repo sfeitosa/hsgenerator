@@ -33,7 +33,8 @@ genLiteralPattern DoubleType = do LiteralPattern . DoubleLiteral <$> arbitrary
 genLiteralPattern StringType = do
     n <- getPrintableString <$> arbitrary
     return $ LiteralPattern (StringLiteral n)
-genLiteralPattern BoolType = do LiteralPattern . BoolLiteral <$> arbitrary    
+genLiteralPattern BoolType = do LiteralPattern . BoolLiteral <$> arbitrary
+genLiteralPattern CharType = do LiteralPattern . CharLiteral <$> arbitraryPrintableChar
 
 genTuplePattern :: [Type] -> Gen Pattern
 genTuplePattern ts = do

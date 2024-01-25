@@ -51,7 +51,6 @@ data CaseAlternative = CaseAlternative Pattern Expression
 
 data Expression = LiteralExpr Literal
                 | VarExpr String
-                | FunExpr String
                 | AppExpr Expression [Expression]
                 | LambdaExpr [Type] [Pattern] Expression
                 | LetExpr String Expression Expression

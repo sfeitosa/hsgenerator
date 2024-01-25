@@ -7,6 +7,7 @@ getPatternVars :: Type -> Pattern -> [(String, Type)]
 getPatternVars t (VarPattern v) = [(v, t)]
 getPatternVars t WildcardPattern = []
 getPatternVars t (ConstructorPattern _ ps) = [] -- @TODO: implement this
+getPatternVars _ _ = []
 
 getLambdaParamTypes :: Expression -> [Type]
 getLambdaParamTypes (LambdaExpr ts _ _) = ts
