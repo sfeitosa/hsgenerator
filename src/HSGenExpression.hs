@@ -49,7 +49,7 @@ genAppExpr s ctx t =
       in if null fs then 
            do 
              tp <- genType s
-             e  <- genLambdaExpr (s `div` 2) ctx (TypeFunction tp t)
+             e  <- fromJust $ genLambdaExpr (s `div` 2) ctx (TypeFunction tp t)
              es <- mapM (genExpression (s `div` 2) ctx) (getLambdaParamTypes e)
              return $ AppExpr e es
          else 
@@ -62,44 +62,42 @@ genAppExpr s ctx t =
 -- Generating Lambda Expression                                              --
 -------------------------------------------------------------------------------
 
-genLambdaExpr :: Int -> Ctx -> Type -> Gen Expression -- @TODO: change to return Maybe
-genLambdaExpr s ctx (TypeFunction tp tr) = do
-    p  <- genPattern tp
+genLambdaExpr :: Int -> Ctx -> Type -> Maybe (Gen Expression)
+genLambdaExpr s ctx (TypeFunction tp tr) = Just $ do
+    p  <- genPattern 1 tp
     e  <- genExpression (s `div` 2) (getPatternVars tp p ++ ctx) tr
     return $ LambdaExpr [tp] [p] e
+genLambdaExpr _ _ _                      = Nothing
 
 -------------------------------------------------------------------------------
 -- Generating Let Expressions                                                --
 -------------------------------------------------------------------------------
 
 genLetExpr :: Int -> Ctx -> Type -> Gen Expression
-genLetExpr s ctx t = do
+genLetExpr s ctx tr = do
     n  <- elements varNames -- @TODO: get and remove var name
-    t  <- genType s
-    e1 <- genExpression (s `div` 2) ctx t
-    e2 <- genExpression (s `div` 2) ((n, t) : ctx) t
+    tv <- genType s
+    e1 <- genExpression (s `div` 2) ctx tv
+    e2 <- genExpression (s `div` 2) ((n, tv) : ctx) tr
     return $ LetExpr n e1 e2
 
 -------------------------------------------------------------------------------
 -- Generating Case Expressions                                               --
 -------------------------------------------------------------------------------
 
-genAlt :: Int -> Ctx -> Type -> Gen CaseAlternative
-genAlt s ctx t = do
-    p <- genPattern t
+genAlt :: Int -> Int -> Ctx -> Type -> Type -> Gen CaseAlternative
+genAlt s f ctx tm t = do
+    p <- genPattern f tm
     e <- genExpression (s `div` 2) (getPatternVars t p ++ ctx) t
     return $ CaseAlternative p e
 
-genAlts :: Int -> Ctx -> Type -> Gen [CaseAlternative]
-genAlts s ctx t = do
-    mx <- chooseInt (0, maxCaseAltSize)
-    vectorOf mx (genAlt s ctx t)
-
 genCaseExpr :: Int -> Ctx -> Type -> Gen Expression
-genCaseExpr s ctx t = do
-    e  <- genExpression (s `div` 2) ctx t
-    al <- genAlts (s `div` 2) ctx t
-    return $ CaseExpr e al
+genCaseExpr s ctx t = do 
+    tm <- genMatchingType (s `div` 2)
+    e  <- genExpression (s `div` 2) ctx tm
+    a1 <- genAlt (s `div` 2) 1 ctx tm t 
+    a2 <- genAlt (s `div` 2) 0 ctx tm t
+    return $ CaseExpr e [a1, a2]
 
 -------------------------------------------------------------------------------
 -- Generating If Expressions                                                 --
@@ -153,21 +151,19 @@ genFinalExpression ctx t@(TypePrim t') =
                         genVarExpr ctx t]
       in do join (elements es)
 genFinalExpression ctx t@(TypeFunction t1 t2) = 
-    LambdaExpr [t1] <$> mapM genPattern [t1] <*> genExpression 0 ctx t2
--- genFinalExpression ctx t@(TypeFunction t1 t2) = 
---     let es = catMaybes [Just $ genLambdaExpr 0 ctx t, 
---                         genVarExpr ctx t]
---       in do join (elements es)
+    let es = catMaybes [genLambdaExpr 0 ctx t, 
+                        genVarExpr ctx t]
+      in do join (elements es)
 genFinalExpression ctx t = error $ "genFinalExpression for (" ++ show t ++ ") not implemented."
 
 genRecursiveExpression :: Int -> Ctx -> Type -> Gen Expression
 genRecursiveExpression s ctx t = 
     let es1 = catMaybes [genLiteralExpr t, 
                          genVarExpr ctx t, 
+                         genLambdaExpr s ctx t, 
                          genTupleExpr (s `div` 2) ctx t,
                          genListExpr (s `div` 2) ctx t]
         es2 = [genAppExpr s ctx t, 
-               genLambdaExpr s ctx t, 
                genLetExpr s ctx t, 
                genCaseExpr s ctx t, 
                genIfExpr s ctx t]         
@@ -176,3 +172,7 @@ genRecursiveExpression s ctx t =
 genExpression :: Int -> Ctx -> Type -> Gen Expression
 genExpression s ctx t | s > 0 = genRecursiveExpression (s `div` 2) ctx t
                       | otherwise = genFinalExpression ctx t
+
+
+instance Arbitrary Expression where
+    arbitrary = sized (\s -> do genExpression s [] =<< genType s)

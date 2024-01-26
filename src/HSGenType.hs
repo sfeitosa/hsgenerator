@@ -34,5 +34,12 @@ genType s | s > 0     = frequency [(100, genTypePrim),
           | otherwise = genTypePrim
     where s' = s `div` 2
 
+genMatchingType :: Int -> Gen Type 
+genMatchingType s | s > 0     = frequency [(100, genTypePrim), 
+                                        (5, genTypeTuple s'), 
+                                        (10, genTypeList s')]
+               | otherwise = genTypePrim
+    where s' = s `div` 2
+
 instance Arbitrary Type where
     arbitrary = sized genType

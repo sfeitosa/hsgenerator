@@ -20,7 +20,7 @@ genWildcardPattern = do return WildcardPattern
 genConstructorPattern :: [Constructor] -> Gen Pattern
 genConstructorPattern cs = do
     c <- elements cs
-    ps <- mapM genPattern (getConstructorTypes c)
+    ps <- mapM (genPattern 1) (getConstructorTypes c)
     return $ ConstructorPattern (getConstructorName c) ps
 
 genLiteralPattern :: PrimType -> Gen Pattern
@@ -38,25 +38,26 @@ genLiteralPattern CharType = do LiteralPattern . CharLiteral <$> arbitraryPrinta
 
 genTuplePattern :: [Type] -> Gen Pattern
 genTuplePattern ts = do
-    ps <- mapM genPattern ts
+    ps <- mapM (genPattern 1) ts
     return $ TuplePattern ps
 
 genListPattern :: Type -> Gen Pattern 
 genListPattern t = frequency [(10, return EmptyListPattern), 
-                              (2, ConsPattern <$> genPattern t <*> genPattern (TypeList t))]
+                              (2, ConsPattern <$> genPattern 1 t <*> genPattern 1 (TypeList t))]
 
-genPattern :: Type -> Gen Pattern
-genPattern (TypePrim t) = frequency [(10, genVarPattern), 
-                                     (5, genWildcardPattern), 
-                                     (1, genLiteralPattern t)]
-genPattern (TypeTuple ts) = frequency [(10, genVarPattern), 
-                                       (5, genWildcardPattern), 
-                                       (1, genTuplePattern ts)]
-genPattern (TypeList t) = frequency [(10, genVarPattern), 
-                                     (5, genWildcardPattern), 
-                                     (1, genListPattern t)]
-genPattern (TypeAlgebraic ts) = frequency [(1, genVarPattern), 
-                                           (1, genWildcardPattern), 
-                                           (1, genConstructorPattern ts)]
-genPattern t = frequency [(10, genVarPattern), 
-                          (1, genWildcardPattern)]
+genPattern :: Int -> Type -> Gen Pattern
+genPattern _ t@(TypeFunction t1 t2) = genGeneralPattern t -- @TODO: verify if this is correct
+genPattern 0 t = genGeneralPattern t
+genPattern n t = genSpecificPattern t
+
+genGeneralPattern :: Type -> Gen Pattern
+genGeneralPattern t = frequency [(10, genVarPattern), 
+                                 (5, genWildcardPattern)]
+
+genSpecificPattern :: Type -> Gen Pattern
+genSpecificPattern (TypePrim t) = frequency [(1, genLiteralPattern t)]
+genSpecificPattern (TypeTuple ts) = frequency [(1, genTuplePattern ts)]
+genSpecificPattern (TypeList t) = frequency [(1, genListPattern t)]
+genSpecificPattern (TypeAlgebraic ts) = frequency [(1, genConstructorPattern ts)]
+genSpecificPattern t = error $ "genSpecificPattern for " ++ show t ++ " not implemented"
+

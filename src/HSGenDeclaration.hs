@@ -15,7 +15,7 @@ genFunctionDecl = do
     n <- elements funNames -- @TODO: get and remove fun name
     mx <- chooseInt (0, maxParamSize)
     ts <- vectorOf mx arbitrary
-    ps <- mapM genPattern ts
+    ps <- mapM (genPattern 1) ts
     return $ FunctionDecl n ts ps (LiteralExpr (StringLiteral "@TODO: generate expressions"))
 
 -------------------------------------------------------------------------------
