@@ -4,7 +4,7 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           hsgenerator
+name:           hsgen
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/sfeitosa/hsgen#readme>
 homepage:       https://github.com/sfeitosa/hsgen#readme
@@ -21,16 +21,16 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/sfeitosa/hsgenerator
+  location: https://github.com/sfeitosa/hsgen
 
 library
   exposed-modules:
       HSSyntax
       Lib
   other-modules:
-      Paths_hsgenerator
+      Paths_hsgen
   autogen-modules:
-      Paths_hsgenerator
+      Paths_hsgen
   hs-source-dirs:
       src
   ghc-options: -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -38,21 +38,21 @@ library
       base >=4.7 && <5
   default-language: Haskell2010
 
-executable hsgenerator-exe
+executable hsgen-exe
   main-is: Main.hs
   other-modules:
-      Paths_hsgenerator
+      Paths_hsgen
   autogen-modules:
-      Paths_hsgenerator
+      Paths_hsgen
   hs-source-dirs:
       app
   ghc-options: -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , hsgenerator
+    , hsgen
   default-language: Haskell2010
 
-test-suite hsgenerator-test
+test-suite hsgen-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -63,15 +63,15 @@ test-suite hsgenerator-test
       HSGenPattern
       HSGenType
       Utils
-      Paths_hsgenerator
+      Paths_hsgen
   autogen-modules:
-      Paths_hsgenerator
+      Paths_hsgen
   hs-source-dirs:
       test
   ghc-options: -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
     , base >=4.7 && <5
-    , hsgenerator
+    , hsgen
     , process
   default-language: Haskell2010
