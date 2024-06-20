@@ -57,7 +57,7 @@ We than for the people contributing for this project:
   <tr>
     <td align="center">
       <a href="#" title="">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Anonymous_emblem.svg/200px-Anonymous_emblem.svg.png" width="100px;"/><br>
+        <img src="https://i1.sndcdn.com/avatars-000495007683-zg65ko-t500x500.jpg" width="100px;"/><br>
         <sub>
           <b>Anonymous</b>
         </sub>
@@ -65,7 +65,7 @@ We than for the people contributing for this project:
     </td>
     <td align="center">
       <a href="#" title="">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Anonymous_emblem.svg/200px-Anonymous_emblem.svg.png" width="100px;"/><br>
+        <img src="https://i1.sndcdn.com/avatars-000495007683-zg65ko-t500x500.jpg" width="100px;"/><br>
         <sub>
           <b>Anonymous</b>
         </sub>
