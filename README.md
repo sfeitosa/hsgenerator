@@ -6,14 +6,12 @@
 ![Bitbucket open issues](https://img.shields.io/bitbucket/issues/iuricode/README-template?style=for-the-badge)
 ![Bitbucket open pull requests](https://img.shields.io/bitbucket/pr-raw/iuricode/README-template?style=for-the-badge)
 
-Linha adicional de texto informativo sobre o que o projeto faz. Sua introdução deve ter cerca de 2 ou 3 linhas. Não exagere, as pessoas não vão ler.
-
 ## 💻 Requirements
 
 Before starting, check if you have all the required tools.
 
-- You have installed the most recent version of `<Haskell / GHC / Stack / Git>`;
-- You have a machine running `<Windows / Linux / Mac>`.
+- You have installed the most recent version of `Haskell / GHC / Stack / Git`;
+- You have a machine running `Windows / Linux / Mac`.
 
 ## 🚀 Installing the Haskell Generator
 
@@ -25,7 +23,7 @@ git clone https://github.com/sfeitosa/hsgenerator.git
 
 ## ☕ Using the Haskell Generator
 
-To invoke the test suite, use the following command:
+To invoke the test suite, enter the repo directory, and use the following command:
 
 ```
 stack test
@@ -49,9 +47,9 @@ To contribute with the Haskell Generator project, follow these steps:
 
 As an alternative, check the GitHub documentation at [how to create a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
 
-## 🤝 Colaboradores
+## 🤝 Contributors
 
-We than for the people contributing for this project:
+We thank the people contributing for this project:
 
 <table>
   <tr>
