@@ -1,9 +1,9 @@
 name:                hsgenerator
 version:             0.1.0.0
-github:              "sfeitosa/hsgenerator"
+github:              "<anonymous>"
 license:             BSD-3-Clause
-author:              "Samuel Feitosa"
-maintainer:          "feitosa.sams [at] gmail [dot] com"
+author:              "<anonymous>"
+maintainer:          "<anonymous> [at] gmail [dot] com"
 copyright:           "LGPL v3"
 
 extra-source-files:
