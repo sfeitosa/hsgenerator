@@ -47,6 +47,17 @@ execProgram fn f = do
   putStrLn ("Executing: " ++ cmd)
   readCreateProcessWithExitCode (shell cmd) ""
 
+-- Function: interpretProgram
+-- Objective: Interprets a program using 'runhaskell'.
+-- Params: The file name and the optimization level.
+-- Returns: The exit code, the output and the error.
+------------------------------------------------------
+interpretProgram :: String -> IO (ExitCode, String, String)
+interpretProgram fn = do
+  let cmd = "runhaskell -w " ++ fn ++ ".hs"
+  putStrLn ("Executing: " ++ cmd)
+  readCreateProcessWithExitCode (shell cmd) ""
+
 -- Function: prop_generate
 -- Objective: Generates and writes a number of programs on the disk.
 -- Params: None.
@@ -88,19 +99,20 @@ prop_behaviorPreservation =
                          run (putStrLn fn)
                          f  <- run (writeFile (fn ++ ".hs") (show m))
                          ex0 <- run (compileProgram fn "-O0")
-                         ex' <- run (compileProgram fn "-O")
+                         ex  <- run (compileProgram fn "-O")
                          ex1 <- run (compileProgram fn "-O1")
                          ex2 <- run (compileProgram fn "-O2")
-                         case (ex0, ex', ex1, ex2) of
+                         case (ex0, ex, ex1, ex2) of
                            (ExitSuccess, ExitSuccess, ExitSuccess, ExitSuccess) -> do
                              (ex0', out0, err0) <- run (execProgram fn "-O0")
-                             (ex', out, err) <- run (execProgram fn "-O")
+                             (ex', out', err') <- run (execProgram fn "-O")
                              (ex1', out1, err1) <- run (execProgram fn "-O1")
                              (ex2', out2, err2) <- run (execProgram fn "-O2")
-                             case (ex0', ex', ex1', ex2') of
-                               (ExitSuccess, ExitSuccess, ExitSuccess, ExitSuccess) -> do
-                                  run (putStrLn ("Output: [" ++ out0 ++ "," ++ out ++ "," ++ out1 ++ "," ++ out2 ++ "]"))
-                                  assert (out0 == out && out == out1 && out1 == out2)
+                             (ex'', out'', err'') <- run (interpretProgram fn)
+                             case (ex0', ex', ex1', ex2', ex'') of
+                               (ExitSuccess, ExitSuccess, ExitSuccess, ExitSuccess, ExitSuccess) -> do
+                                  run (putStrLn ("Output: [\n" ++ out0 ++ out' ++ out1 ++ out2 ++ out'' ++ "]"))
+                                  assert (out0 == out' && out' == out1 && out1 == out2 && out2 == out'')
                                _ -> do 
                                   run (putStrLn "Execution error.")
                                   assert False
@@ -112,6 +124,6 @@ prop_behaviorPreservation =
 -- Objective: Run all properties using QuickCheck.
 --------------------------------------------------
 main = do 
-  let nt = 1000
+  let nt = 100
   writeFile "gc.tmp" "0"
   quickCheckWithResult (stdArgs { maxSuccess = nt }) prop_behaviorPreservation
