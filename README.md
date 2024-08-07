@@ -63,7 +63,7 @@ We thank the people contributing for this project:
     </td>
     <td align="center">
       <a href="#" title="">
-        <img src="https://www2.decom.ufop.br/xr4goodlab/wp-content/uploads/2021/06/rodrigo-600x600.jpg" width="100px;"/><br>
+        <img src="https://rodrigogribeiro.github.io/images/foto-barba.jpg" width="100px;"/><br>
         <sub>
           <b>Rodrigo Geraldo Ribeiro</b>
         </sub>
