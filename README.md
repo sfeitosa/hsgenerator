@@ -55,17 +55,17 @@ We thank the people contributing for this project:
   <tr>
     <td align="center">
       <a href="#" title="">
-        <img src="https://i1.sndcdn.com/avatars-000495007683-zg65ko-t500x500.jpg" width="100px;"/><br>
+        <img src="https://cc.uffs.edu.br/images/avatars/samuel.feitosa.jpg" width="100px;"/><br>
         <sub>
-          <b>Anonymous</b>
+          <b>Samuel da Silva Feitosa</b>
         </sub>
       </a>
     </td>
     <td align="center">
       <a href="#" title="">
-        <img src="https://i1.sndcdn.com/avatars-000495007683-zg65ko-t500x500.jpg" width="100px;"/><br>
+        <img src="http://200.239.128.208/xr4goodlab/wp-content/uploads/2021/06/rodrigo-600x600.jpg" width="100px;"/><br>
         <sub>
-          <b>Anonymous</b>
+          <b>Rodrigo Geraldo Ribeiro</b>
         </sub>
       </a>
     </td>
